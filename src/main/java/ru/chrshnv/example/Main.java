@@ -3,6 +3,7 @@ package ru.chrshnv.example;
 import ru.chrshnv.di.ApplicationContext;
 import ru.chrshnv.example.service.SomeClassWithAnnotationInjection;
 import ru.chrshnv.example.service.SomeInterfaceInjectable;
+import ru.chrshnv.example.service.SomeTestConstructorInjection;
 
 public class Main {
 	public static void main(String[] args) {
@@ -14,5 +15,8 @@ public class Main {
 
 		SomeInterfaceInjectable ifaceImpl = context.createInstance(SomeInterfaceInjectable.class);
 		ifaceImpl.testMethod();
+
+		SomeTestConstructorInjection constructorInjectionInstance = context.createInstance(SomeTestConstructorInjection.class);
+		constructorInjectionInstance.test();
 	}
 }
