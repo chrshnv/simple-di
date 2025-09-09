@@ -22,10 +22,12 @@ public class InjectAnnotationObjectConfigurer implements ObjectConfigurer {
 				continue;
 
 			Class<?> type = field.getType();
+			if (!context.getScannedClasses().contains(type))
+				throw new RuntimeException(type.getName() + " not in context");
 
 			field.setAccessible(true);
 			try {
-				field.set(o, context.createInstance(type));
+				field.set(o, context.registerInstance(type));
 			} catch (IllegalAccessException e) {
 				throw new RuntimeException(e);
 			}

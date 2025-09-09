@@ -10,9 +10,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ObjectFactory {
-	private final Map<Class<?>, Object> instance = new HashMap<>();
+	private final Map<Class<?>, Object> instances = new ConcurrentHashMap<>();
 	private final Map<Class<?>, Class<?>> implementations = new HashMap<>();
 
 	private final List<ObjectPreConfigurer> preConfigurers = List.of(
@@ -22,36 +23,47 @@ public class ObjectFactory {
 	private final ReflectionUtils reflectionUtils;
 	private final ApplicationContext ctx;
 
-	public ObjectFactory(Class<?> mainClass, ApplicationContext ctx) {
-		this.reflectionUtils = new ReflectionUtils(mainClass);
+	public ObjectFactory(ApplicationContext ctx, ReflectionUtils utils) {
+		this.reflectionUtils = utils;
 		this.ctx = ctx;
 	}
 
 	public <T> T createInstance(Class<T> clazz) {
-		//noinspection unchecked
-		return (T) instance.computeIfAbsent(clazz, m -> {
-			if (m.isInterface())
-				m = implementations.computeIfAbsent(clazz, this::searchImplementation);
+		// DON'T use computeIfAbsent cause Concurrent implementations should override this method and, on a best-effort basis, throw an IllegalStateException if it is detected that the mapping function modifies this map during computation and as a result computation would never complete.
 
-			Object[] args = new Object[]{};
-			Class<?>[] argsTypes = new Class<?>[]{};
+		@SuppressWarnings("unchecked") T instance = (T) instances.get(clazz);
+		if (instance != null)
+			return instance;
 
-			for (ObjectPreConfigurer preConfigurer : preConfigurers) {
-				preConfigurer.setContext(ctx);
+		Class<?> originalClass = clazz;
 
-				PreConfigurerResult result = preConfigurer.configure(args, argsTypes, clazz);
+		if (clazz.isInterface())
+			//noinspection unchecked
+			clazz = (Class<T>) implementations.computeIfAbsent(clazz, this::searchImplementation);
 
-				args = result.args();
-				argsTypes = result.argsTypes();
-			}
+		Object[] args = new Object[]{};
+		Class<?>[] argsTypes = new Class<?>[]{};
 
-			try {
-				return m.getDeclaredConstructor(argsTypes).newInstance(args);
-			} catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-					 NoSuchMethodException e) {
-				throw new RuntimeException(e);
-			}
-		});
+		for (ObjectPreConfigurer preConfigurer : preConfigurers) {
+			preConfigurer.setContext(ctx);
+
+			PreConfigurerResult result = preConfigurer.configure(args, argsTypes, clazz);
+
+			args = result.args();
+			argsTypes = result.argsTypes();
+		}
+
+		try {
+			instance = clazz.getDeclaredConstructor(argsTypes).newInstance(args);
+
+			instances.put(clazz, instance);
+			instances.put(originalClass, instance);
+
+			return instance;
+		} catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+				 NoSuchMethodException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	private <T> Class<? extends T> searchImplementation(Class<T> clazz) {

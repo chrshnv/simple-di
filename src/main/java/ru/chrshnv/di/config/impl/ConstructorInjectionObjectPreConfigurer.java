@@ -33,7 +33,7 @@ public class ConstructorInjectionObjectPreConfigurer implements ObjectPreConfigu
 			args = Arrays.copyOf(args, args.length + 1);
 			argsTypes = Arrays.copyOf(argsTypes, argsTypes.length + 1);
 
-			args[args.length - 1] = context.createInstance(parameterType);
+			args[args.length - 1] = context.registerInstance(parameterType);
 			argsTypes[argsTypes.length - 1] = getInstanceType(args[args.length - 1]);
 		}
 

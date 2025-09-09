@@ -1,10 +1,13 @@
 package ru.chrshnv.di;
 
+import ru.chrshnv.di.annotation.Injectable;
 import ru.chrshnv.di.config.ObjectConfigurer;
 import ru.chrshnv.di.config.impl.DeprecatedInjectableAnnotationObjectConfigurer;
 import ru.chrshnv.di.config.impl.InjectAnnotationObjectConfigurer;
 import ru.chrshnv.di.factory.ObjectFactory;
+import ru.chrshnv.di.util.ReflectionUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,6 +15,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ApplicationContext {
 	private final ObjectFactory factory;
 	private final Map<Class<?>, Object> instances = new ConcurrentHashMap<>();
+	private final ReflectionUtils utils;
+	private final List<Class<?>> scannedClasses = new ArrayList<>();
 
 	private final List<ObjectConfigurer> configurers = List.of(
 		new InjectAnnotationObjectConfigurer(this),
@@ -19,19 +24,45 @@ public class ApplicationContext {
 	);
 
 	public ApplicationContext(Class<?> mainClass) {
-		this.factory = new ObjectFactory(mainClass, this);
+		this.utils = new ReflectionUtils(mainClass);
+		this.factory = new ObjectFactory(this, this.utils);
+
+		this.init();
 	}
 
-	public <T> T createInstance(Class<T> clazz) {
-		//noinspection unchecked
-		return (T) instances.computeIfAbsent(clazz, m -> {
-			@SuppressWarnings("unchecked") T instance = (T) factory.createInstance(m);
+	public void init() {
+		List<Class<?>> annotated = utils.getAnnotatedWith(Injectable.class);
+		scannedClasses.addAll(annotated);
 
-			for (ObjectConfigurer configurer : configurers) {
-				instance = configurer.configure(instance);
-			}
+		annotated
+			.forEach(this::registerInstance);
+	}
 
+	public <T> T registerInstance(Class<T> clazz) {
+		// DON'T use computeIfAbsent cause Concurrent implementations should override this method and, on a best-effort basis, throw an IllegalStateException if it is detected that the mapping function modifies this map during computation and as a result computation would never complete.
+
+		@SuppressWarnings("unchecked") T instance = (T) instances.get(clazz);
+
+		if (instance != null)
 			return instance;
-		});
+
+		instance = factory.createInstance(clazz);
+
+		for (ObjectConfigurer configurer : configurers) {
+			instance = configurer.configure(instance);
+		}
+
+		instances.put(clazz, instance);
+
+		return instance;
+	}
+
+	public <T> T getInstance(Class<T> clazz) {
+		//noinspection unchecked
+		return (T) instances.get(clazz);
+	}
+
+	public List<Class<?>> getScannedClasses() {
+		return scannedClasses;
 	}
 }

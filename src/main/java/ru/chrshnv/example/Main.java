@@ -1,22 +1,14 @@
 package ru.chrshnv.example;
 
 import ru.chrshnv.di.ApplicationContext;
-import ru.chrshnv.example.service.SomeClassWithAnnotationInjection;
-import ru.chrshnv.example.service.SomeInterfaceInjectable;
-import ru.chrshnv.example.service.SomeTestConstructorInjection;
+import ru.chrshnv.di.ApplicationRunner;
+import ru.chrshnv.example.service.SomeTestInjectableClass;
 
 public class Main {
 	public static void main(String[] args) {
-		ApplicationContext context = new ApplicationContext(Main.class);
+		ApplicationContext ctx = ApplicationRunner.run(Main.class, args);
 
-		SomeClassWithAnnotationInjection instance = context.createInstance(SomeClassWithAnnotationInjection.class);
-
-		instance.test3();
-
-		SomeInterfaceInjectable ifaceImpl = context.createInstance(SomeInterfaceInjectable.class);
-		ifaceImpl.testMethod();
-
-		SomeTestConstructorInjection constructorInjectionInstance = context.createInstance(SomeTestConstructorInjection.class);
-		constructorInjectionInstance.test();
+		SomeTestInjectableClass instance = ctx.getInstance(SomeTestInjectableClass.class);
+		instance.testMethod();
 	}
 }

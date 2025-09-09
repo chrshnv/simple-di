@@ -1,5 +1,8 @@
 package ru.chrshnv.example.service;
 
+import ru.chrshnv.di.annotation.Injectable;
+
+@Injectable
 public class SomeTestConstructorInjection {
 	private final SomeInterfaceInjectable injectable;
 
