@@ -1,6 +1,7 @@
 package ru.chrshnv.di.config.impl;
 
 import ru.chrshnv.di.ApplicationContext;
+import ru.chrshnv.di.annotation.Injectable;
 import ru.chrshnv.di.config.ObjectPreConfigurer;
 import ru.chrshnv.di.dto.PreConfigurerResult;
 
@@ -30,6 +31,9 @@ public class ConstructorInjectionObjectPreConfigurer implements ObjectPreConfigu
 		Class<?>[] parameterTypes = constructor.getParameterTypes();
 
 		for (Class<?> parameterType : parameterTypes) {
+			if (!parameterType.isAnnotationPresent(Injectable.class))
+				throw new RuntimeException(parameterType.getName() + " not in context");
+
 			args = Arrays.copyOf(args, args.length + 1);
 			argsTypes = Arrays.copyOf(argsTypes, argsTypes.length + 1);
 
