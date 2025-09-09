@@ -1,6 +1,7 @@
 package ru.chrshnv.di;
 
 import ru.chrshnv.di.config.ObjectConfigurer;
+import ru.chrshnv.di.config.impl.DeprecatedInjectableAnnotationObjectConfigurer;
 import ru.chrshnv.di.config.impl.InjectAnnotationObjectConfigurer;
 import ru.chrshnv.di.factory.ObjectFactory;
 
@@ -13,7 +14,8 @@ public class ApplicationContext {
 	private final Map<Class<?>, Object> instances = new ConcurrentHashMap<>();
 
 	private final List<ObjectConfigurer> configurers = List.of(
-		new InjectAnnotationObjectConfigurer(this)
+		new InjectAnnotationObjectConfigurer(this),
+		new DeprecatedInjectableAnnotationObjectConfigurer()
 	);
 
 	public ApplicationContext(Class<?> mainClass) {
