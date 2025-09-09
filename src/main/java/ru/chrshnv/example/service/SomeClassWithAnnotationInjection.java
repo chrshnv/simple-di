@@ -7,7 +7,7 @@ public class SomeClassWithAnnotationInjection {
 	private SomeTestInjectableClass test;
 
 	public void test3() {
-		System.out.printf("from injected -");
+		System.out.print("from injected -");
 		test.testMethod();
 		System.out.println();
 	}

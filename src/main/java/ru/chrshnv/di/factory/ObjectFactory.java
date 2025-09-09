@@ -1,6 +1,5 @@
 package ru.chrshnv.di.factory;
 
-import ru.chrshnv.di.ApplicationContext;
 import ru.chrshnv.di.util.ReflectionUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -13,11 +12,9 @@ public class ObjectFactory {
 	private final Map<Class<?>, Class<?>> implementations = new HashMap<>();
 
 	private final ReflectionUtils reflectionUtils;
-	private final ApplicationContext context;
 
-	public ObjectFactory(Class<?> mainClass, ApplicationContext context) {
+	public ObjectFactory(Class<?> mainClass) {
 		this.reflectionUtils = new ReflectionUtils(mainClass);
-		this.context = context;
 	}
 
 	public <T> T createInstance(Class<T> clazz) {

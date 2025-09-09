@@ -17,7 +17,7 @@ public class ApplicationContext {
 	);
 
 	public ApplicationContext(Class<?> mainClass) {
-		this.factory = new ObjectFactory(mainClass, this);
+		this.factory = new ObjectFactory(mainClass);
 	}
 
 	public <T> T createInstance(Class<T> clazz) {
