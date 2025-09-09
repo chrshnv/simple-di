@@ -65,4 +65,13 @@ public class ApplicationContext {
 	public List<Class<?>> getScannedClasses() {
 		return scannedClasses;
 	}
+
+	public <T> Class<? extends  T> getImplements(Class<T> clazz) {
+		List<Class<T>> impls = utils.getImplements(clazz);
+
+		if (impls.size() != 1)
+			throw new RuntimeException("Should have only one implementation");
+
+		return impls.getLast();
+	}
 }

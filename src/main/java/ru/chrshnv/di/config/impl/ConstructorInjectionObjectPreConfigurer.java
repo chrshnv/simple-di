@@ -25,15 +25,20 @@ public class ConstructorInjectionObjectPreConfigurer implements ObjectPreConfigu
 		if (constructors.length > 1)
 			throw new RuntimeException("Should be one constructor");
 
+		if (clazz.isInterface()) {
+			Class<?> impl = context.getImplements(clazz);
+
+			if (!impl.isAnnotationPresent(Injectable.class))
+				throw new RuntimeException(impl.getName() + " not in context");
+		} else if (!clazz.isAnnotationPresent(Injectable.class))
+			throw new RuntimeException(clazz.getName() + " not in context");
+
 		Constructor<?> constructor = constructors[0];
 		constructor.setAccessible(true);
 
 		Class<?>[] parameterTypes = constructor.getParameterTypes();
 
 		for (Class<?> parameterType : parameterTypes) {
-			if (!parameterType.isAnnotationPresent(Injectable.class))
-				throw new RuntimeException(parameterType.getName() + " not in context");
-
 			args = Arrays.copyOf(args, args.length + 1);
 			argsTypes = Arrays.copyOf(argsTypes, argsTypes.length + 1);
 

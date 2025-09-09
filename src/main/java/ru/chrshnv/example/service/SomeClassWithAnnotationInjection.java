@@ -1,7 +1,9 @@
 package ru.chrshnv.example.service;
 
 import ru.chrshnv.di.annotation.Inject;
+import ru.chrshnv.di.annotation.Injectable;
 
+@Injectable
 public class SomeClassWithAnnotationInjection {
 	@Inject
 	private SomeTestInjectableClass test;
