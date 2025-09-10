@@ -11,6 +11,8 @@ public class Main {
 		System.out.println("loaded classes:");
 		ctx.getScannedClasses().forEach(it -> System.out.println(it.getName()));
 
+		System.out.println("---");
+
 		SomeTestInjectableClass instance = ctx.getInstance(SomeTestInjectableClass.class);
 		instance.testMethod();
 	}
